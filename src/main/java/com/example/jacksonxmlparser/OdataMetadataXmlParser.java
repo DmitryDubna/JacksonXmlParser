@@ -37,7 +37,6 @@ public class OdataMetadataXmlParser {
         return odataMetadata;
     }
 
-//    @XmlRootElement(name = "Edmx", namespace = edmxNamespace)
     @Getter
     @ToString
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -65,6 +64,7 @@ public class OdataMetadataXmlParser {
 
     @Getter
     @ToString
+    @EqualsAndHashCode
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class Schema {
         @JacksonXmlProperty(localName = "Namespace", isAttribute = true)
@@ -93,6 +93,7 @@ public class OdataMetadataXmlParser {
 
     @Getter
     @ToString
+    @EqualsAndHashCode
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class EntityType {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
@@ -115,6 +116,7 @@ public class OdataMetadataXmlParser {
 
     @Getter
     @ToString
+    @EqualsAndHashCode
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class ComplexType {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
@@ -127,6 +129,7 @@ public class OdataMetadataXmlParser {
 
     @Getter
     @ToString
+    @EqualsAndHashCode
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class Association {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
@@ -139,6 +142,7 @@ public class OdataMetadataXmlParser {
 
     @Getter
     @ToString
+    @EqualsAndHashCode
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class EnumType {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
@@ -154,6 +158,7 @@ public class OdataMetadataXmlParser {
 
     @Getter
     @ToString
+    @EqualsAndHashCode
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class Key {
         @JacksonXmlElementWrapper(useWrapping = false)
@@ -163,6 +168,7 @@ public class OdataMetadataXmlParser {
 
     @Getter
     @ToString
+    @EqualsAndHashCode
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class PropertyRef {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
@@ -170,8 +176,8 @@ public class OdataMetadataXmlParser {
     }
 
     @Getter
-    @ToString()
-    @EqualsAndHashCode()
+    @ToString
+    @EqualsAndHashCode
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class Property {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
@@ -185,8 +191,8 @@ public class OdataMetadataXmlParser {
     }
 
     @Getter
-    @ToString()
-    @EqualsAndHashCode()
+    @ToString
+    @EqualsAndHashCode
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class NavigationProperty {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
@@ -203,8 +209,8 @@ public class OdataMetadataXmlParser {
     }
 
     @Getter
-    @ToString()
-    @EqualsAndHashCode()
+    @ToString
+    @EqualsAndHashCode
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class End {
         @JacksonXmlProperty(localName = "Role", isAttribute = true)
@@ -218,13 +224,18 @@ public class OdataMetadataXmlParser {
     }
 
 
-    @ToString(callSuper = true)
-    static class Member extends PropertyRef {
+    @Getter
+    @ToString
+    @EqualsAndHashCode
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class Member {
+        @JacksonXmlProperty(localName = "Name", isAttribute = true)
+        private String name;
     }
 
     @Getter
     @ToString
-    @EqualsAndHashCode()
+    @EqualsAndHashCode
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class EntitySet {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
