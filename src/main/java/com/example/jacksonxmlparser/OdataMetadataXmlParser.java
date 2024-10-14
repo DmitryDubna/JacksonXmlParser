@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class OdataMetadataXmlParser {
@@ -37,8 +39,7 @@ public class OdataMetadataXmlParser {
         return odataMetadata;
     }
 
-    @Getter
-    @ToString
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonRootName("Edmx")
     static class OdataMetadata {
@@ -49,22 +50,29 @@ public class OdataMetadataXmlParser {
         @JacksonXmlProperty(localName = "Schema")
         private List<Schema> dataServices;
 
-        public Map<String, String> toPropertyTypes()
+        public Map<String, String> toPropertyTypes(final String entityName)
         {
+            var entityTypeName = dataServices.stream()
+                    .filter(schema -> Objects.nonNull(schema.getEntityContainer()))
+                    .flatMap(schema -> schema.getEntityContainer().getEntitySets().stream())
+                    .filter(entitySet -> entitySet.getName().equalsIgnoreCase(entityName))
+                    .findFirst()
+                    .map(EntitySet::getEntityType)
+                    .orElse(null);
+
+            if (Objects.isNull(entityTypeName))
+                return Map.of();
+
             return dataServices.stream()
-                    .filter(schema -> Objects.nonNull(schema.getEntityTypes()))
+                    .filter(schema -> entityTypeName.startsWith(schema.getNamespace()))
                     .flatMap(schema -> schema.getEntityTypes().stream())
-                    .filter(entityType -> Objects.nonNull(entityType.getProperties()))
+                    .filter(entityType -> entityTypeName.endsWith(entityType.getName()))
                     .flatMap(entityType -> entityType.getProperties().stream())
-                    .distinct()
-                    .peek(System.out::println)
                     .collect(Collectors.toMap(Property::getName, Property::getType));
         }
     }
 
-    @Getter
-    @ToString
-    @EqualsAndHashCode
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class Schema {
         @JacksonXmlProperty(localName = "Namespace", isAttribute = true)
@@ -85,15 +93,15 @@ public class OdataMetadataXmlParser {
         @JacksonXmlElementWrapper(useWrapping = false)
         @JacksonXmlProperty(localName = "EnumType")
         private List<EnumType> enumTypes;
-
-        @JacksonXmlElementWrapper(localName = "EntityContainer")
-        @JacksonXmlProperty(localName = "EntitySet")
-        private List<EntitySet> entityContainer;
+//
+//        @JacksonXmlElementWrapper(localName = "EntityContainer")
+//        @JacksonXmlProperty(localName = "EntitySet")
+//        private List<EntitySet> entityContainer;
+        @JacksonXmlProperty(localName = "EntityContainer")
+        private EntityContainer entityContainer;
     }
 
-    @Getter
-    @ToString
-    @EqualsAndHashCode
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class EntityType {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
@@ -114,9 +122,7 @@ public class OdataMetadataXmlParser {
         private List<NavigationProperty> navigationProperties;
     }
 
-    @Getter
-    @ToString
-    @EqualsAndHashCode
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class ComplexType {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
@@ -127,9 +133,7 @@ public class OdataMetadataXmlParser {
         private List<Property> properties;
     }
 
-    @Getter
-    @ToString
-    @EqualsAndHashCode
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class Association {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
@@ -140,9 +144,7 @@ public class OdataMetadataXmlParser {
         private List<End> ends;
     }
 
-    @Getter
-    @ToString
-    @EqualsAndHashCode
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class EnumType {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
@@ -156,9 +158,25 @@ public class OdataMetadataXmlParser {
         private List<Member> members;
     }
 
-    @Getter
-    @ToString
-    @EqualsAndHashCode
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class EntityContainer {
+        @JacksonXmlProperty(localName = "Name", isAttribute = true)
+        private String name;
+
+        @JacksonXmlProperty(localName = "IsDefaultEntityContainer", isAttribute = true)
+        private boolean isDefaultEntityContainer;
+
+        @JacksonXmlElementWrapper(useWrapping = false)
+        @JacksonXmlProperty(localName = "EntitySet")
+        private List<EntitySet> entitySets;
+
+        @JacksonXmlElementWrapper(useWrapping = false)
+        @JacksonXmlProperty(localName = "FunctionImport")
+        private List<FunctionImport> functionImports;
+    }
+
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class Key {
         @JacksonXmlElementWrapper(useWrapping = false)
@@ -166,18 +184,14 @@ public class OdataMetadataXmlParser {
         private List<PropertyRef> propertyRefs;
     }
 
-    @Getter
-    @ToString
-    @EqualsAndHashCode
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class PropertyRef {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
         private String name;
     }
 
-    @Getter
-    @ToString
-    @EqualsAndHashCode
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class Property {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
@@ -190,9 +204,7 @@ public class OdataMetadataXmlParser {
         private boolean isNullable;
     }
 
-    @Getter
-    @ToString
-    @EqualsAndHashCode
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class NavigationProperty {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
@@ -208,9 +220,7 @@ public class OdataMetadataXmlParser {
         private String toRole;
     }
 
-    @Getter
-    @ToString
-    @EqualsAndHashCode
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class End {
         @JacksonXmlProperty(localName = "Role", isAttribute = true)
@@ -224,18 +234,14 @@ public class OdataMetadataXmlParser {
     }
 
 
-    @Getter
-    @ToString
-    @EqualsAndHashCode
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class Member {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
         private String name;
     }
 
-    @Getter
-    @ToString
-    @EqualsAndHashCode
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class EntitySet {
         @JacksonXmlProperty(localName = "Name", isAttribute = true)
@@ -243,5 +249,27 @@ public class OdataMetadataXmlParser {
 
         @JacksonXmlProperty(localName = "EntityType", isAttribute = true)
         private String entityType;
+    }
+
+//    <FunctionImport Name="Unpost"
+//    IsBindable="true"
+//    IsSideEffecting="true">
+//					<Parameter Name="bindingParameter"
+//    Type="StandardODATA.Document_ПерерасчетСтраховыхВзносов"/>
+//					<Parameter Name="PostingModeOperational"
+//    Type="Edm.Boolean"/>
+//				</FunctionImport>
+//
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class FunctionImport {
+        @JacksonXmlProperty(localName = "Name", isAttribute = true)
+        private String name;
+
+        @JacksonXmlProperty(localName = "IsBindable", isAttribute = true)
+        private boolean isBindable;
+
+        @JacksonXmlProperty(localName = "IsSideEffecting", isAttribute = true)
+        private boolean isSideEffecting;
     }
 }
