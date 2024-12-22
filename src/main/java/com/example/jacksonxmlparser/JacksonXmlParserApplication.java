@@ -13,12 +13,12 @@ public class JacksonXmlParserApplication {
 
     public static void main(String[] args) {
         try {
-//            String xml = Files.readString(Paths.get("/home/dmitry/work/JavaProjects/JacksonXmlParser/data.xml"));
+            String xml = Files.readString(Paths.get("/home/dmitry/work/JavaProjects/JacksonXmlParser/data.xml"));
 
             OdataMetadataXmlParser.OdataMetadata data = OdataMetadataXmlParser.parse(xml);
-            System.out.println(data);
+//            System.out.println(data);
             var types = data.toPropertyTypes("AccountingRegister_Хозрасчетный_RecordType");
-            System.out.println("PropertyTypes:\n" + types);
+            System.out.println("PropertyTypes (size = %d):\n%s".formatted(types.size(), types));
         } catch (IOException e) {
             e.printStackTrace();
         }

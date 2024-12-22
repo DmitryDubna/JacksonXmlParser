@@ -2,20 +2,15 @@ package com.example.jacksonxmlparser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonRootName;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class OdataMetadataXmlParser {
@@ -56,8 +51,8 @@ public class OdataMetadataXmlParser {
                     .filter(schema -> Objects.nonNull(schema.getEntityContainer()))
                     .flatMap(schema -> schema.getEntityContainer().getEntitySets().stream())
                     .filter(entitySet -> entitySet.getName().equalsIgnoreCase(entityName))
-                    .findFirst()
                     .map(EntitySet::getEntityType)
+                    .findFirst()
                     .orElse(null);
 
             if (Objects.isNull(entityTypeName))
@@ -93,10 +88,7 @@ public class OdataMetadataXmlParser {
         @JacksonXmlElementWrapper(useWrapping = false)
         @JacksonXmlProperty(localName = "EnumType")
         private List<EnumType> enumTypes;
-//
-//        @JacksonXmlElementWrapper(localName = "EntityContainer")
-//        @JacksonXmlProperty(localName = "EntitySet")
-//        private List<EntitySet> entityContainer;
+
         @JacksonXmlProperty(localName = "EntityContainer")
         private EntityContainer entityContainer;
     }
@@ -251,15 +243,6 @@ public class OdataMetadataXmlParser {
         private String entityType;
     }
 
-//    <FunctionImport Name="Unpost"
-//    IsBindable="true"
-//    IsSideEffecting="true">
-//					<Parameter Name="bindingParameter"
-//    Type="StandardODATA.Document_ПерерасчетСтраховыхВзносов"/>
-//					<Parameter Name="PostingModeOperational"
-//    Type="Edm.Boolean"/>
-//				</FunctionImport>
-//
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     private static class FunctionImport {
